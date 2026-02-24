@@ -23,7 +23,7 @@ const AdminSidebar = () => {
         { title: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
         { title: 'Services', icon: Wrench, path: '/admin/services' },
         { title: 'Users', icon: Users, path: '/admin/users' },
-        { title: 'Provider Apps', icon: ClipboardList, path: '/admin/applications' },
+        { title: 'Provider Applications', icon: ClipboardList, path: '/admin/applications' },
     ];
 
     const isActive = (path) => location.pathname === path;
@@ -31,12 +31,12 @@ const AdminSidebar = () => {
     return (
         <>
             {/* Mobile Menu Toggle */}
-            <div className="lg:hidden fixed top-24 left-4 z-50">
+            <div className="lg:hidden fixed top-[72px] left-4 z-50">
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 bg-white rounded-lg shadow-lg text-orange-600"
+                    className="p-2.5 bg-white rounded-xl shadow-xl text-blue-600 border border-slate-100 active:scale-95 transition-all"
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
             </div>
 
@@ -60,10 +60,17 @@ const AdminSidebar = () => {
                 <div className="h-full flex flex-col p-4">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-8 px-2">
-                        {!isCollapsed && <span className="text-xl font-bold text-orange-600">Admin Panel</span>}
+                        {!isCollapsed && (
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-blue-600 rounded-lg">
+                                    <Wrench className="text-white h-4 w-4" />
+                                </div>
+                                <span className="text-xl font-bold text-slate-800">Admin</span>
+                            </div>
+                        )}
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="hidden lg:block p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+                            className="hidden lg:block p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
                         >
                             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                         </button>
@@ -79,11 +86,11 @@ const AdminSidebar = () => {
                                 className={`
                                     flex items-center p-3 rounded-xl transition-all duration-200 group
                                     ${isActive(item.path)
-                                        ? 'bg-orange-50 text-orange-600'
-                                        : 'text-gray-500 hover:bg-gray-50 hover:text-orange-600'}
+                                        ? 'bg-blue-50 text-blue-600'
+                                        : 'text-gray-500 hover:bg-blue-50/50 hover:text-blue-600'}
                                 `}
                             >
-                                <item.icon className={`transition-colors ${isActive(item.path) ? 'text-orange-600' : 'group-hover:text-orange-600'}`} size={22} />
+                                <item.icon className={`transition-colors ${isActive(item.path) ? 'text-blue-600' : 'group-hover:text-blue-600'}`} size={22} />
                                 {!isCollapsed && <span className="ml-3 font-medium">{item.title}</span>}
                             </Link>
                         ))}

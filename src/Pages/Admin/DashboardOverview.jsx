@@ -111,18 +111,7 @@ const DashboardOverview = () => {
                 ))}
             </div>
 
-            {/* Quick Actions or Recent Activity placeholder can go here */}
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-bold text-gray-800">System Health</h2>
-                    <button className="text-orange-600 text-sm font-semibold hover:underline flex items-center gap-1">
-                        View Detailed Reports <ArrowUpRight size={16} />
-                    </button>
-                </div>
-                <div className="h-48 flex items-center justify-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                    <p className="text-gray-400 italic">Advanced analytics and charts coming soon...</p>
-                </div>
-            </div>
+
         </div>
     );
 };

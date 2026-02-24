@@ -8,7 +8,13 @@ import {
     Search,
     User,
     Mail,
-    Phone
+    Phone,
+    Calendar,
+    MapPin,
+    Clock,
+    FileText,
+    ExternalLink,
+    X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -16,6 +22,8 @@ const ProviderApplications = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedProvider, setSelectedProvider] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const apiUrl = import.meta.env.VITE_API_URL;
 
     const fetchApplications = async () => {
@@ -40,10 +48,23 @@ const ProviderApplications = () => {
             if (response.data.success) {
                 toast.success(`Application ${status} successfully`);
                 fetchApplications(); // Refresh list
+                if (selectedProvider?._id === id) {
+                    setSelectedProvider({ ...selectedProvider, status });
+                }
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to update status");
         }
+    };
+
+    const handleViewDetails = (provider) => {
+        setSelectedProvider(provider);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedProvider(null);
     };
 
     const filteredApps = applications.filter(app =>
@@ -107,8 +128,8 @@ const ProviderApplications = () => {
 
                                 <div className="flex items-center flex-wrap gap-3">
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${app.status === 'approved' ? 'bg-green-50 text-green-600' :
-                                            app.status === 'rejected' ? 'bg-red-50 text-red-600' :
-                                                'bg-amber-50 text-amber-600'
+                                        app.status === 'rejected' ? 'bg-red-50 text-red-600' :
+                                            'bg-amber-50 text-amber-600'
                                         }`}>
                                         {app.status}
                                     </span>
@@ -117,6 +138,7 @@ const ProviderApplications = () => {
 
                                     <div className="flex items-center gap-2">
                                         <button
+                                            onClick={() => handleViewDetails(app)}
                                             title="View Details"
                                             className="p-2 border border-gray-100 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
                                         >
@@ -150,8 +172,209 @@ const ProviderApplications = () => {
                     </div>
                 )}
             </div>
+
+            {/* Provider Details Modal */}
+            {isModalOpen && selectedProvider && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in duration-300">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">{selectedProvider.businessName}</h2>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${selectedProvider.status === 'approved' ? 'bg-green-50 text-green-600' :
+                                        selectedProvider.status === 'rejected' ? 'bg-red-50 text-red-600' :
+                                            'bg-amber-50 text-amber-600'
+                                        }`}>
+                                        {selectedProvider.status}
+                                    </span>
+                                    <span className="text-sm text-gray-400">•</span>
+                                    <span className="text-sm text-gray-500">Applied on {new Date(selectedProvider.createdAt).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={closeModal}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                            {/* Personal & Professional Info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                                    <section>
+                                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Personal Details</h3>
+                                        <div className="space-y-3">
+                                            <DetailItem icon={<User size={16} />} label="Owner" value={selectedProvider.ownerName} />
+                                            <DetailItem icon={<Mail size={16} />} label="Email" value={selectedProvider.email} />
+                                            <DetailItem icon={<Phone size={16} />} label="Phone" value={selectedProvider.phone} />
+                                            <DetailItem icon={<Calendar size={16} />} label="DOB" value={selectedProvider.dob ? new Date(selectedProvider.dob).toLocaleDateString() : 'N/A'} />
+                                            <DetailItem icon={<User size={16} />} label="Gender" value={selectedProvider.gender} />
+                                        </div>
+                                    </section>
+
+                                    <section>
+                                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Professional Details</h3>
+                                        <div className="space-y-3">
+                                            <DetailItem label="Primary Service" value={selectedProvider.primaryService?.name || 'Other'} />
+                                            {selectedProvider.otherServices && (
+                                                <DetailItem label="Other Services" value={selectedProvider.otherServices} />
+                                            )}
+                                            <DetailItem label="Experience" value={`${selectedProvider.experience} Years`} />
+                                            {selectedProvider.additionalSkills?.length > 0 && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-xs text-gray-400 font-medium">Additional Skills</span>
+                                                    <div className="flex flex-wrap gap-2 mt-1">
+                                                        {selectedProvider.additionalSkills.map((skill, idx) => (
+                                                            <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md">{skill}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <section>
+                                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Service Area & Availability</h3>
+                                        <div className="space-y-3">
+                                            <DetailItem icon={<MapPin size={16} />} label="Address" value={`${selectedProvider.address}, ${selectedProvider.area}, ${selectedProvider.city} - ${selectedProvider.pincode}`} />
+                                            <DetailItem icon={<Clock size={16} />} label="Working Days" value={selectedProvider.workingDays?.join(", ")} />
+                                            <DetailItem icon={<Clock size={16} />} label="Working Hours" value={selectedProvider.workingHours ? `${selectedProvider.workingHours.start} - ${selectedProvider.workingHours.end}` : 'N/A'} />
+                                            <DetailItem label="Emergency" value={selectedProvider.emergencyAvailability ? "Yes" : "No"} />
+                                        </div>
+                                    </section>
+
+                                    <section>
+                                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Identity Verification</h3>
+                                        <div className="space-y-3">
+                                            <DetailItem label="ID Type" value={selectedProvider.idProof?.idType} />
+                                            <DetailItem label="ID Number" value={selectedProvider.idProof?.idNumber} />
+                                            {selectedProvider.idProof?.idImage && (
+                                                <a
+                                                    href={`${apiUrl}/${selectedProvider.idProof.idImage}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 text-sm text-orange-600 font-semibold hover:underline mt-2"
+                                                >
+                                                    <FileText size={16} /> View ID Proof <ExternalLink size={14} />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            {selectedProvider.description && (
+                                <section>
+                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">About the Business</h3>
+                                    <p className="text-gray-600 bg-gray-50 p-4 rounded-xl text-sm leading-relaxed">
+                                        {selectedProvider.description}
+                                    </p>
+                                </section>
+                            )}
+
+                            {/* Documents */}
+                            <section>
+                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Uploaded Documents</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                    {selectedProvider.certification && (
+                                        <DocumentCard
+                                            name="Primary Certification"
+                                            path={selectedProvider.certification}
+                                            apiUrl={apiUrl}
+                                        />
+                                    )}
+                                    {selectedProvider.documents?.length > 0 ? (
+                                        selectedProvider.documents.map((doc, idx) => (
+                                            <DocumentCard
+                                                key={idx}
+                                                name={doc.name || `Document ${idx + 1}`}
+                                                path={doc.path}
+                                                apiUrl={apiUrl}
+                                                date={doc.uploadDate}
+                                            />
+                                        ))
+                                    ) : (
+                                        !selectedProvider.certification && (
+                                            <p className="text-sm text-gray-400 italic">No additional documents uploaded.</p>
+                                        )
+                                    )}
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-wrap gap-3 justify-end">
+                            <button
+                                onClick={closeModal}
+                                className="px-6 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-white transition-colors"
+                            >
+                                Close
+                            </button>
+                            {selectedProvider.status === 'pending' && (
+                                <>
+                                    <button
+                                        onClick={() => handleStatusUpdate(selectedProvider._id, 'rejected')}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors"
+                                    >
+                                        <XCircle size={18} /> Reject Application
+                                    </button>
+                                    <button
+                                        onClick={() => handleStatusUpdate(selectedProvider._id, 'approved')}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-colors"
+                                    >
+                                        <CheckCircle2 size={18} /> Approve Application
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
+
+// Helper Components
+const DetailItem = ({ icon, label, value }) => (
+    <div className="flex flex-col gap-1">
+        <span className="text-xs text-gray-400 font-medium">{label}</span>
+        <div className="flex items-center gap-2 text-gray-700 text-sm font-medium">
+            {icon && <span className="text-gray-400">{icon}</span>}
+            <span>{value || 'N/A'}</span>
+        </div>
+    </div>
+);
+
+const DocumentCard = ({ name, path, apiUrl, date }) => (
+    <div className="p-4 border border-gray-100 rounded-xl bg-white hover:border-orange-200 transition-all group">
+        <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                    <FileText size={20} />
+                </div>
+                <div>
+                    <h4 className="text-sm font-bold text-gray-800 line-clamp-1">{name}</h4>
+                    {date && <p className="text-[10px] text-gray-400 uppercase tracking-wider">{new Date(date).toLocaleDateString()}</p>}
+                </div>
+            </div>
+            <a
+                href={`${apiUrl}/${path}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
+                title="View Document"
+            >
+                <ExternalLink size={16} />
+            </a>
+        </div>
+    </div>
+);
 
 export default ProviderApplications;

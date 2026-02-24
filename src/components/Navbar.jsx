@@ -29,32 +29,32 @@ const Navbar = () => {
     return (
         <>
             <nav
-                className={`fixed top-0 w-full z-[100] transition-all duration-500 ${scrolled || isOpen
-                    ? 'bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-200/50 py-3'
-                    : 'bg-transparent py-6'
+                className={`fixed top-0 w-full z-[100] transition-all duration-500 ease-in-out ${scrolled || isOpen
+                    ? 'bg-white/70 backdrop-blur-md shadow-lg border-b border-white/20 py-3'
+                    : 'bg-transparent py-5'
                     }`}
             >
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="flex justify-between items-center">
                         {/* Logo */}
-                        <Link to="/" className="flex items-center gap-2.5 group relative z-[110]">
-                            <div className="p-2 bg-blue-600 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-blue-200">
+                        <Link to="/" className="flex items-center gap-3 group relative z-[110]">
+                            <div className="p-2.5 bg-blue-600 rounded-xl group-hover:rotate-12 group-hover:scale-110 transition-all duration-300 shadow-lg shadow-blue-200/50">
                                 <Hammer className="text-white h-5 w-5 md:h-6 md:w-6" />
                             </div>
-                            <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900">
-                                Local<span className="text-blue-600">Fixer</span>
+                            <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                                Local<span className="text-blue-600 group-hover:text-slate-900 transition-colors">Fixer</span>
                             </span>
                         </Link>
 
                         {/* Desktop Links */}
-                        <div className="hidden md:flex items-center gap-1 bg-slate-100/50 p-1 rounded-full border border-slate-200/50 backdrop-blur-sm">
+                        <div className="hidden md:flex items-center gap-1 bg-white/50 backdrop-blur-md p-1.5 rounded-full border border-slate-200/40 shadow-sm">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
                                     to={link.path}
-                                    className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${location.pathname === link.path
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-600'
+                                    className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${location.pathname === link.path
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/50'
                                         }`}
                                 >
                                     {link.name}
@@ -104,7 +104,7 @@ const Navbar = () => {
 
                         {/* Mobile Toggle */}
                         <button
-                            className="md:hidden relative z-[110] p-2.5 rounded-xl bg-slate-900 text-white shadow-lg active:scale-90 transition-all"
+                            className="md:hidden relative z-[110] p-2.5 rounded-xl bg-blue-600 text-white shadow-lg active:scale-95 hover:bg-blue-700 transition-all duration-300"
                             onClick={() => setIsOpen(!isOpen)}
                         >
                             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

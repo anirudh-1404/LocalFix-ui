@@ -26,7 +26,7 @@ function App() {
     <BrowserRouter>
       <Toaster position="top-center" reverseOrder={false} />
       <Navbar />
-      <main className="pt-20">
+      <main className="pt-16 md:pt-20">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<ServicePage />} />
