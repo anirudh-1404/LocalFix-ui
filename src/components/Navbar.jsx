@@ -85,10 +85,15 @@ const Navbar = () => {
                                             <LayoutDashboard className="h-4 w-4" />
                                             Dashboard
                                         </Link>
+                                    ) : user.role === 'serviceProvider' ? (
+                                        <Link to="/provider/dashboard" className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-orange-100 flex items-center gap-2 group">
+                                            <LayoutDashboard className="h-4 w-4" />
+                                            Partner Dashboard
+                                        </Link>
                                     ) : (
                                         <Link to="/profile" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-100 flex items-center gap-2 group">
                                             <User className="h-4 w-4" />
-                                            Profile
+                                            Account
                                         </Link>
                                     )}
                                     <button
@@ -179,6 +184,15 @@ const Navbar = () => {
                                             <LayoutDashboard className="h-5 w-5" />
                                             Admin Dashboard
                                         </Link>
+                                    ) : user.role === 'serviceProvider' ? (
+                                        <Link
+                                            to="/provider/dashboard"
+                                            onClick={() => setIsOpen(false)}
+                                            className="w-full py-4 flex items-center justify-center gap-2 font-bold text-white bg-orange-600 rounded-2xl shadow-lg shadow-orange-100"
+                                        >
+                                            <LayoutDashboard className="h-5 w-5" />
+                                            Partner Dashboard
+                                        </Link>
                                     ) : (
                                         <Link
                                             to="/profile"
@@ -186,7 +200,7 @@ const Navbar = () => {
                                             className="w-full py-4 flex items-center justify-center gap-2 font-bold text-white bg-blue-600 rounded-2xl shadow-lg shadow-blue-100"
                                         >
                                             <User className="h-5 w-5" />
-                                            My Profile
+                                            My Account
                                         </Link>
                                     )}
                                     <button

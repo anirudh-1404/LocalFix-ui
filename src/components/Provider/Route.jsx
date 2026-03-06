@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const AdminRoute = () => {
+const ServiceProviderRoute = () => {
     const { user, token } = useAuth();
 
     if (!token) {
@@ -11,7 +11,7 @@ const AdminRoute = () => {
         return <Navigate to="/login" replace />;
     }
 
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'serviceProvider') {
         toast.error("You are not authorized to access this page");
         return <Navigate to="/" replace />;
     }
@@ -19,4 +19,4 @@ const AdminRoute = () => {
     return <Outlet />;
 };
 
-export default AdminRoute;
+export default ServiceProviderRoute;

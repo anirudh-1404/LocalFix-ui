@@ -26,10 +26,23 @@ const LoginPage = () => {
 
             if (response.data.success) {
                 setSuccess(true);
+                const { isPasswordResetRequired } = response.data.data;
                 login(response.data.data, response.data.token);
 
                 setTimeout(() => {
-                    navigate('/');
+                    if (isPasswordResetRequired) {
+                        navigate('/change-password');
+                    } else {
+                        // Role-based redirection
+                        const role = response.data.data.role;
+                        if (role === 'admin') {
+                            navigate('/admin/dashboard');
+                        } else if (role === 'serviceProvider') {
+                            navigate('/provider/dashboard');
+                        } else {
+                            navigate('/');
+                        }
+                    }
                 }, 1500);
             }
         } catch (err) {

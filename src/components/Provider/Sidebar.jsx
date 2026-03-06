@@ -2,28 +2,28 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
-    Users,
     ClipboardList,
     ChevronLeft,
     ChevronRight,
     LogOut,
     Menu,
     X,
-    Wrench
+    Hammer,
+    Settings,
+    User
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
-const AdminSidebar = () => {
+const Sidebar = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
     const { logout } = useAuth();
 
     const menuItems = [
-        { title: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
-        { title: 'Services', icon: Wrench, path: '/admin/services' },
-        { title: 'Users', icon: Users, path: '/admin/users' },
-        { title: 'Provider Applications', icon: ClipboardList, path: '/admin/applications' },
+        { title: 'Overview', icon: LayoutDashboard, path: '/provider/dashboard' },
+        { title: 'My Bookings', icon: ClipboardList, path: '/provider/bookings' },
+        { title: 'Profile Settings', icon: User, path: '/provider/profile' },
     ];
 
     const isActive = (path) => location.pathname === path;
@@ -34,7 +34,7 @@ const AdminSidebar = () => {
             <div className="lg:hidden fixed top-[72px] left-4 z-50">
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2.5 bg-white rounded-xl shadow-xl text-blue-600 border border-slate-100 active:scale-95 transition-all"
+                    className="p-2.5 bg-white rounded-xl shadow-xl text-orange-600 border border-slate-100 active:scale-95 transition-all"
                 >
                     {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
@@ -55,22 +55,25 @@ const AdminSidebar = () => {
                     bg-white border-r border-gray-100 transition-all duration-300 ease-in-out
                     ${isCollapsed ? 'w-20' : 'w-64'}
                     ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                    overflow-y-auto
                 `}
             >
                 <div className="h-full flex flex-col p-4">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-8 px-2">
                         {!isCollapsed && (
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-blue-600 rounded-lg">
-                                    <Wrench className="text-white h-4 w-4" />
+                            <Link to="/" className="flex items-center gap-2 group/logo transition-all">
+                                <div className="p-1.5 bg-orange-600 rounded-lg group-hover/logo:scale-110 transition-transform">
+                                    <Hammer className="text-white h-4 w-4" />
                                 </div>
-                                <span className="text-xl font-bold text-slate-800">Admin</span>
-                            </div>
+                                <span className="text-xl font-bold text-slate-800">
+                                    Local<span className="text-orange-600">Fixer</span>
+                                </span>
+                            </Link>
                         )}
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="hidden lg:block p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
+                            className="hidden lg:block p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-orange-600 transition-colors"
                         >
                             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                         </button>
@@ -86,11 +89,11 @@ const AdminSidebar = () => {
                                 className={`
                                     flex items-center p-3 rounded-xl transition-all duration-200 group
                                     ${isActive(item.path)
-                                        ? 'bg-blue-50 text-blue-600'
-                                        : 'text-gray-500 hover:bg-blue-50/50 hover:text-blue-600'}
+                                        ? 'bg-orange-50 text-orange-600'
+                                        : 'text-gray-500 hover:bg-orange-50/50 hover:text-orange-600'}
                                 `}
                             >
-                                <item.icon className={`transition-colors ${isActive(item.path) ? 'text-blue-600' : 'group-hover:text-blue-600'}`} size={22} />
+                                <item.icon className={`transition-colors ${isActive(item.path) ? 'text-orange-600' : 'group-hover:text-orange-600'}`} size={22} />
                                 {!isCollapsed && <span className="ml-3 font-medium">{item.title}</span>}
                             </Link>
                         ))}
@@ -114,4 +117,4 @@ const AdminSidebar = () => {
     );
 };
 
-export default AdminSidebar;
+export default Sidebar;

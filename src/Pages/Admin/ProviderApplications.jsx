@@ -42,9 +42,9 @@ const ProviderApplications = () => {
         fetchApplications();
     }, [apiUrl]);
 
-    const handleStatusUpdate = async (id, status) => {
+    const handleStatusUpdate = async (id, status, reason = "") => {
         try {
-            const response = await axios.patch(`${apiUrl}/api/providers/status/${id}`, { status });
+            const response = await axios.patch(`${apiUrl}/api/providers/status/${id}`, { status, reason });
             if (response.data.success) {
                 toast.success(`Application ${status} successfully`);
                 fetchApplications(); // Refresh list
@@ -154,7 +154,10 @@ const ProviderApplications = () => {
                                                     <CheckCircle2 size={16} /> Approve
                                                 </button>
                                                 <button
-                                                    onClick={() => handleStatusUpdate(app._id, 'rejected')}
+                                                    onClick={() => {
+                                                        const reason = prompt("Enter reason for rejection (optional):");
+                                                        if (reason !== null) handleStatusUpdate(app._id, 'rejected', reason);
+                                                    }}
                                                     className="flex items-center gap-1 px-3 py-2 border border-red-100 text-red-600 rounded-lg text-sm font-semibold hover:bg-red-50 transition-colors"
                                                 >
                                                     <XCircle size={16} /> Reject
@@ -320,7 +323,10 @@ const ProviderApplications = () => {
                             {selectedProvider.status === 'pending' && (
                                 <>
                                     <button
-                                        onClick={() => handleStatusUpdate(selectedProvider._id, 'rejected')}
+                                        onClick={() => {
+                                            const reason = prompt("Enter reason for rejection (optional):");
+                                            if (reason !== null) handleStatusUpdate(selectedProvider._id, 'rejected', reason);
+                                        }}
                                         className="flex items-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors"
                                     >
                                         <XCircle size={18} /> Reject Application

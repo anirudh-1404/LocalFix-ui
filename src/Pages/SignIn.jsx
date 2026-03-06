@@ -29,7 +29,14 @@ const RegisterPage = () => {
                 login(response.data.data, response.data.token);
 
                 setTimeout(() => {
-                    navigate('/');
+                    const role = response.data.data.role;
+                    if (role === 'admin') {
+                        navigate('/admin/dashboard');
+                    } else if (role === 'serviceProvider') {
+                        navigate('/provider/dashboard');
+                    } else {
+                        navigate('/');
+                    }
                 }, 1500);
             }
         } catch (err) {
