@@ -14,8 +14,10 @@ import {
     X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const ServiceManagement = () => {
+    const { user } = useAuth();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedServiceId, setExpandedServiceId] = useState(null);

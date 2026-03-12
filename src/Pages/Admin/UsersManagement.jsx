@@ -9,8 +9,10 @@ import {
     Shield
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const UsersManagement = () => {
+    const { user } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -97,10 +99,10 @@ const UsersManagement = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${user.role === 'admin'
-                                                    ? 'bg-purple-50 text-purple-600'
-                                                    : user.role === 'serviceProvider'
-                                                        ? 'bg-blue-50 text-blue-600'
-                                                        : 'bg-green-50 text-green-600'
+                                                ? 'bg-purple-50 text-purple-600'
+                                                : user.role === 'serviceProvider'
+                                                    ? 'bg-blue-50 text-blue-600'
+                                                    : 'bg-green-50 text-green-600'
                                                 }`}>
                                                 <Shield size={12} />
                                                 {user.role}

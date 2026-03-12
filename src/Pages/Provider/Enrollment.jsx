@@ -19,7 +19,7 @@ import {
 import toast from "react-hot-toast";
 import axios from "axios";
 
-const ProviderEnrollment = () => {
+const Enrollment = () => {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [services, setServices] = useState([]);
@@ -684,4 +684,4 @@ const ProviderEnrollment = () => {
     );
 };
 
-export default ProviderEnrollment;
+export default Enrollment;

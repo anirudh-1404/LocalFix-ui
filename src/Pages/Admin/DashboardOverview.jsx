@@ -8,8 +8,10 @@ import {
     TrendingUp
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const DashboardOverview = () => {
+    const { user } = useAuth();
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalProviders: 0,
