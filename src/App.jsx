@@ -8,6 +8,7 @@ import Cart from "./Pages/Cart";
 import LoginPage from "./Pages/Login";
 import RegisterPage from "./Pages/SignIn";
 import About from "./Pages/About";
+import Profile from "./Pages/Profile";
 
 import { Toaster } from "react-hot-toast";
 import ProviderEnrollment from "./Pages/Provider/Enrollment";
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<ServicePage />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/profile" element={<Profile />} />
 
           {/* Auth Routes - Protected from logged-in users */}
           <Route element={<AuthRoute />}>

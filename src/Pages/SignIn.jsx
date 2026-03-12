@@ -22,11 +22,11 @@ const RegisterPage = () => {
 
         try {
             const apiUrl = import.meta.env.VITE_API_URL;
-            const response = await axios.post(`${apiUrl}/api/auth/signup`, formData);
+            const response = await axios.post(`${apiUrl}/api/auth/signup`, formData, { withCredentials: true });
 
             if (response.data.success) {
                 setSuccess(true);
-                login(response.data.data, response.data.token);
+                login(response.data.data);
 
                 setTimeout(() => {
                     const role = response.data.data.role;

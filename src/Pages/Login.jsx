@@ -22,12 +22,12 @@ const LoginPage = () => {
 
         try {
             const apiUrl = import.meta.env.VITE_API_URL;
-            const response = await axios.post(`${apiUrl}/api/auth/login`, formData);
+            const response = await axios.post(`${apiUrl}/api/auth/login`, formData, { withCredentials: true });
 
             if (response.data.success) {
                 setSuccess(true);
                 const { isPasswordResetRequired } = response.data.data;
-                login(response.data.data, response.data.token);
+                login(response.data.data);
 
                 setTimeout(() => {
                     if (isPasswordResetRequired) {

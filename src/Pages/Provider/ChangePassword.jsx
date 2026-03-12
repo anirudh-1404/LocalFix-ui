@@ -12,7 +12,7 @@ const ChangePassword = () => {
     const [success, setSuccess] = useState(false);
 
     const navigate = useNavigate();
-    const { token, logout } = useAuth();
+    const { logout } = useAuth();
     const apiUrl = import.meta.env.VITE_API_URL;
 
     const handleSubmit = async (e) => {
@@ -31,12 +31,7 @@ const ChangePassword = () => {
         try {
             const response = await axios.patch(
                 `${apiUrl}/api/auth/update-password`,
-                { newPassword: passwords.newPassword },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                { newPassword: passwords.newPassword }
             );
 
             if (response.data.success) {

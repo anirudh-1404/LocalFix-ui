@@ -4,9 +4,17 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const ServiceProviderRoute = () => {
-    const { user, token } = useAuth();
+    const { user, loading } = useAuth();
 
-    if (!token) {
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+            </div>
+        );
+    }
+
+    if (!user) {
         toast.error("Please login to access this page");
         return <Navigate to="/login" replace />;
     }

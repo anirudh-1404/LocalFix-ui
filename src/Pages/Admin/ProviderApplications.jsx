@@ -17,8 +17,10 @@ import {
     X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const ProviderApplications = () => {
+    const { user } = useAuth();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -44,7 +46,9 @@ const ProviderApplications = () => {
 
     const handleStatusUpdate = async (id, status, reason = "") => {
         try {
-            const response = await axios.patch(`${apiUrl}/api/providers/status/${id}`, { status, reason });
+            const response = await axios.patch(`${apiUrl}/api/providers/status/${id}`,
+                { status, reason }
+            );
             if (response.data.success) {
                 toast.success(`Application ${status} successfully`);
                 fetchApplications(); // Refresh list
