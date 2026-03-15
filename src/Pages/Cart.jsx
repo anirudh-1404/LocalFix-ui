@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Trash2, ShoppingCart, ArrowRight, MapPin, Calendar, Clock, ChevronLeft, Plus, CheckCircle, Phone, User } from 'lucide-react';
+import { Trash2, ShoppingCart, ArrowRight, MapPin, Calendar, Clock, ChevronLeft, CheckCircle, Phone, User, CreditCard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+// Dynamically loads Razorpay checkout script
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        if (document.getElementById('razorpay-sdk')) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement('script');
+        script.id = 'razorpay-sdk';
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 const Cart = () => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [checkoutStep, setCheckoutStep] = useState('cart'); // 'cart' or 'checkout'
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [lastBookingId, setLastBookingId] = useState(null);
     const [addresses, setAddresses] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [isAddingAddress, setIsAddingAddress] = useState(false);
@@ -37,11 +55,10 @@ const Cart = () => {
     const fetchCart = async () => {
         if (!user) return;
         try {
-            const res = await axios.get(`${apiUrl}/api/cart/${user._id}`);
+            const res = await axios.get(`${apiUrl}/api/cart/${user._id}`, { withCredentials: true });
             setCart(res.data.cart);
         } catch (error) {
             console.error("Failed to load cart");
-            // toast.error("Could not load cart");
         } finally {
             setLoading(false);
         }
@@ -50,7 +67,7 @@ const Cart = () => {
     const fetchAddresses = async () => {
         if (!user) return;
         try {
-            const res = await axios.get(`${apiUrl}/api/auth/addresses`);
+            const res = await axios.get(`${apiUrl}/api/auth/addresses`, { withCredentials: true });
             if (res.data.success) {
                 setAddresses(res.data.data);
                 const defaultAddr = res.data.data.find(a => a.isDefault);
@@ -78,7 +95,7 @@ const Cart = () => {
             const res = await axios.post(`${apiUrl}/api/cart/remove`, {
                 userId: user._id,
                 itemId: problemId
-            });
+            }, { withCredentials: true });
             setCart(res.data.cart);
             toast.success("Item removed");
         } catch (error) {
@@ -98,7 +115,7 @@ const Cart = () => {
     const handleAddressSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post(`${apiUrl}/api/auth/addresses`, newAddress);
+            const res = await axios.post(`${apiUrl}/api/auth/addresses`, newAddress, { withCredentials: true });
             if (res.data.success) {
                 toast.success("Address added");
                 setAddresses(res.data.data);
@@ -116,46 +133,126 @@ const Cart = () => {
         }
     };
 
-    const handleConfirmBooking = async () => {
+    // ─── Razorpay Payment Flow ────────────────────────────────────────────────
+    const handleConfirmAndPay = async () => {
         if (!selectedAddress) return toast.error("Please select an address");
         if (!bookingData.scheduledDate || !bookingData.startTime) return toast.error("Please select date and time");
 
         try {
             setLoading(true);
-            // In the current schema, a cart might have multiple items, but createBooking seems to handle one.
-            // We'll iterate and create bookings for each item (or just take the first if that's the logic for now)
-            // Ideally, the backend should handle bulk booking creation from cart.
-            // For now, let's assume one item or handle the first one to match your existing API.
 
-            const item = cart.items[0];
-            const payload = {
-                providerId: item.problemId.providerId || "67c4331070860edc7f394474", // Fallback for demo if missing
-                serviceId: item.problemId.serviceId || "67c4331070860edc7f394474", // Fallback
-                scheduledDate: bookingData.scheduledDate,
-                startTime: bookingData.startTime,
-                address: selectedAddress.line1,
-                city: selectedAddress.city,
-                area: selectedAddress.area,
-                pincode: selectedAddress.pincode,
-                contactName: bookingData.contactName,
-                contactNumber: bookingData.contactNumber,
-                customerNotes: bookingData.customerNotes
+            // 1. Load Razorpay SDK
+            const sdkLoaded = await loadRazorpayScript();
+            if (!sdkLoaded) {
+                toast.error("Failed to load Razorpay. Check your internet connection.");
+                return;
+            }
+
+            const amount = cart.totalPrice;
+            const problemIds = cart.items.map(item => item.problemId._id);
+            const firstItem = cart.items[0];
+
+            // 2. Create Razorpay order on backend
+            const orderRes = await axios.post(`${apiUrl}/api/payment/create-order`, 
+                { amount }, 
+                { withCredentials: true }
+            );
+            if (!orderRes.data.success) {
+                toast.error("Could not initiate payment. Try again.");
+                return;
+            }
+
+            const { orderId, razorpayKeyId } = orderRes.data;
+
+            // 3. Open Razorpay checkout popup
+            const options = {
+                key: razorpayKeyId,
+                amount: amount * 100, // paise
+                currency: 'INR',
+                name: 'LocalFix',
+                description: cart.items.length > 1 
+                    ? `${firstItem.problemId?.title} + ${cart.items.length - 1} more` 
+                    : firstItem.problemId?.title || 'Service Booking',
+                order_id: orderId,
+                prefill: {
+                    name: bookingData.contactName || user?.name,
+                    contact: bookingData.contactNumber || user?.phone,
+                    email: user?.email,
+                },
+                theme: {
+                    color: '#2563EB',
+                },
+                handler: async (response) => {
+                    try {
+                        // 4. Verify payment signature on backend
+                        const verifyRes = await axios.post(`${apiUrl}/api/payment/verify`, {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                        }, { withCredentials: true });
+
+                        if (!verifyRes.data.success) {
+                            toast.error("Payment verification failed. Contact support.");
+                            return;
+                        }
+
+                        // 5. Create booking with payment info
+                        const payload = {
+                            providerId: firstItem.problemId.providerId,
+                            problemIds: problemIds, 
+                            scheduledDate: bookingData.scheduledDate,
+                            startTime: bookingData.startTime,
+                            address: selectedAddress.line1,
+                            city: selectedAddress.city,
+                            area: selectedAddress.area,
+                            pincode: selectedAddress.pincode,
+                            contactName: bookingData.contactName,
+                            contactNumber: bookingData.contactNumber,
+                            customerNotes: bookingData.customerNotes,
+                            paymentMethod: 'online',
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                        };
+
+                        const bookingRes = await axios.post(`${apiUrl}/api/booking/`, payload, { withCredentials: true });
+
+                        if (bookingRes.data.success) {
+                            // 6. Clear entire cart
+                            await axios.delete(`${apiUrl}/api/cart/clear`, { withCredentials: true });
+                            
+                            setLastBookingId(bookingRes.data.data._id);
+                            setShowSuccess(true);
+                        }
+                    } catch (err) {
+                        console.error("Verification/Booking Error:", err);
+                        toast.error(err.response?.data?.message || "Booking failed after payment. Contact support.");
+                    } finally {
+                        setLoading(false);
+                    }
+                },
+                modal: {
+                    ondismiss: () => {
+                        setLoading(false);
+                        toast("Payment cancelled.", { icon: "ℹ️" });
+                    },
+                },
             };
 
-            const res = await axios.post(`${apiUrl}/api/booking/create`, payload);
+            const rzp = new window.Razorpay(options);
 
-            if (res.data.success) {
-                // Clear cart after booking
-                await axios.post(`${apiUrl}/api/cart/remove`, { userId: user._id, itemId: item.problemId._id });
-                toast.success("Booking confirmed successfully!");
-                navigate('/profile');
-            }
+            rzp.on('payment.failed', (response) => {
+                setLoading(false);
+                toast.error(`Payment failed: ${response.error.description}`);
+            });
+
+            rzp.open();
+
         } catch (error) {
-            toast.error(error.response?.data?.message || "Booking failed");
-        } finally {
+            toast.error(error.response?.data?.message || "Payment initiation failed");
             setLoading(false);
         }
     };
+    // ─────────────────────────────────────────────────────────────────────────
 
     if (!user) {
         return (
@@ -187,6 +284,42 @@ const Cart = () => {
                 <Link to="/services" className="px-6 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition">
                     Browse Services
                 </Link>
+            </div>
+        );
+    }
+
+    if (showSuccess) {
+        return (
+            <div className="min-h-screen bg-slate-50 pt-24 pb-12 flex items-center justify-center px-6">
+                <div className="max-w-md w-full bg-white rounded-[3rem] p-10 shadow-2xl shadow-blue-100/50 border border-blue-50 text-center animate-in zoom-in-95 fade-in duration-500">
+                    <div className="w-24 h-24 bg-green-100 rounded-[2rem] flex items-center justify-center mx-auto mb-8 animate-bounce">
+                        <CheckCircle className="w-12 h-12 text-green-600" />
+                    </div>
+                    <h2 className="text-3xl font-black text-slate-900 mb-4">Payment Successful!</h2>
+                    <p className="text-slate-500 mb-8 leading-relaxed font-medium">
+                        Your booking has been confirmed. A professional technician will arrive at your scheduled time.
+                    </p>
+                    
+                    <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 text-left">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Booking Reference</p>
+                        <p className="text-sm font-mono text-slate-900 font-bold">#{lastBookingId?.slice(-12)}</p>
+                    </div>
+
+                    <div className="space-y-3">
+                        <button 
+                            onClick={() => navigate('/profile')}
+                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 transition"
+                        >
+                            View My Bookings
+                        </button>
+                        <button 
+                            onClick={() => navigate('/')}
+                            className="w-full py-4 bg-white text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition"
+                        >
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -357,7 +490,7 @@ const Cart = () => {
                                         <div>
                                             <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Select Date</label>
                                             <div className="relative">
-                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400Pointer-events-none" />
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                                 <input
                                                     type="date"
                                                     required
@@ -465,24 +598,34 @@ const Cart = () => {
                                 </button>
                             ) : (
                                 <button
-                                    onClick={handleConfirmBooking}
+                                    onClick={handleConfirmAndPay}
                                     disabled={loading}
-                                    className="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-black shadow-lg shadow-slate-100 hover:bg-black hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-3"
+                                    className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-3"
                                 >
-                                    {loading ? 'Processing...' : 'Confirm & Pay (Cash)'}
-                                    <CheckCircle className="w-6 h-6 text-blue-400" />
+                                    {loading ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CreditCard className="w-5 h-5" />
+                                            Confirm & Pay ₹{cart.totalPrice}
+                                        </>
+                                    )}
                                 </button>
                             )}
 
-                            <div className="mt-8">
+                            <div className="mt-6">
+                                {/* Razorpay trust badge */}
                                 <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-50">
                                     <div className="flex items-start gap-3">
                                         <div className="p-2 bg-white rounded-xl text-blue-600">
-                                            <CheckCircle className="w-4 h-4" />
+                                            <CreditCard className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase text-blue-600 tracking-wider">Guarantee</p>
-                                            <p className="text-xs text-slate-600 font-medium">Safe booking with certified LocalFixers and cash-after-service option.</p>
+                                            <p className="text-[10px] font-black uppercase text-blue-600 tracking-wider">Secure Payment</p>
+                                            <p className="text-xs text-slate-600 font-medium">Powered by Razorpay. UPI, Cards, Net Banking & Wallets accepted.</p>
                                         </div>
                                     </div>
                                 </div>
