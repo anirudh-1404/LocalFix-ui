@@ -10,7 +10,8 @@ import {
     X,
     Hammer,
     Settings,
-    User
+    User,
+    ListTodo
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,6 +23,7 @@ const Sidebar = () => {
 
     const menuItems = [
         { title: 'Overview', icon: LayoutDashboard, path: '/provider/dashboard' },
+        { title: 'Open Orders', icon: ListTodo, path: '/provider/orders' },
         { title: 'My Bookings', icon: ClipboardList, path: '/provider/bookings' },
         { title: 'Profile Settings', icon: User, path: '/provider/profile' },
     ];
