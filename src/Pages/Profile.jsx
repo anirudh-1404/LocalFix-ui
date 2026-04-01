@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, MapPin, Phone, Plus, Trash2, Edit2, CheckCircle, ChevronRight, Settings } from 'lucide-react';
+import { User, MapPin, Phone, Plus, Trash2, Edit2, CheckCircle, ChevronRight, Settings, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -22,6 +22,10 @@ const Profile = () => {
         contactNumber: '',
         isDefault: false
     });
+
+    const [rating, setRating] = useState(5);
+    const [review, setReview] = useState('');
+    const [submittingRating, setSubmittingRating] = useState(false);
 
     const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -110,6 +114,27 @@ const Profile = () => {
         });
         setEditingAddress(address);
         setIsAddingAddress(true);
+    };
+
+    const handleRatingSubmit = async (e) => {
+        e.preventDefault();
+        setSubmittingRating(true);
+        try {
+            const res = await axios.patch(`${apiUrl}/api/booking/customer/${selectedBooking._id}/rate`, { 
+                customerRating: rating, 
+                customerReview: review 
+            }, { withCredentials: true });
+
+            if (res.data.success) {
+                toast.success("Provider rated successfully!");
+                setBookings(prev => prev.map(b => b._id === selectedBooking._id ? res.data.data : b));
+                setSelectedBooking(res.data.data);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to submit rating.");
+        } finally {
+            setSubmittingRating(false);
+        }
     };
 
     const handleDelete = async (addressId) => {
@@ -576,6 +601,57 @@ const Profile = () => {
 
                         {/* Modal Body */}
                         <div className="p-8 overflow-y-auto max-h-[70vh]">
+                            
+                            {/* Provider Rating Core */}
+                            {selectedBooking.status === 'completed' && !selectedBooking.customerRating && (
+                                <form onSubmit={handleRatingSubmit} className="bg-blue-50 p-6 rounded-3xl border border-blue-200 mb-8">
+                                    <h4 className="font-black text-blue-900 mb-2 flex items-center gap-2 border-b border-blue-200 pb-3"><Star size={18}/> Rate Provider</h4>
+                                    
+                                    <div className="mb-6 mt-4">
+                                        <label className="block text-sm font-bold text-blue-800 mb-2">How was the service?</label>
+                                        <div className="flex gap-2">
+                                            {[1,2,3,4,5].map(star => (
+                                                <Star 
+                                                    key={star} 
+                                                    size={36} 
+                                                    className={`cursor-pointer transition-all ${rating >= star ? 'fill-blue-500 text-blue-500 drop-shadow-md scale-110' : 'text-blue-200'}`}
+                                                    onClick={() => setRating(star)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-bold text-blue-800 mb-2">Write a Review (Optional)</label>
+                                        <textarea 
+                                            rows="2" 
+                                            className="w-full bg-white border border-blue-200 rounded-xl p-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-400 outline-none transition text-sm"
+                                            placeholder="Tell us about your experience..."
+                                            value={review}
+                                            onChange={(e) => setReview(e.target.value)}
+                                        ></textarea>
+                                    </div>
+
+                                    <button type="submit" disabled={submittingRating} className="w-full py-3 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                        {submittingRating ? 'Saving Rating...' : 'Submit Rating'}
+                                    </button>
+                                </form>
+                            )}
+
+                            {selectedBooking.status === 'completed' && selectedBooking.customerRating && (
+                                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex justify-between items-center mb-8">
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-500 mb-1">Your Rating for Provider</p>
+                                        <div className="flex gap-1">
+                                            {[1,2,3,4,5].map(star => (
+                                                <Star key={star} size={16} className={selectedBooking.customerRating >= star ? 'fill-blue-500 text-blue-500' : 'text-slate-300'} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="bg-green-100 text-green-700 p-2 rounded-full font-bold text-xs"><CheckCircle size={16}/> Rating Saved</div>
+                                </div>
+                            )}
+
                             <div className="grid gap-8">
                                 {/* Service Info */}
                                 <div className="flex items-start gap-4">

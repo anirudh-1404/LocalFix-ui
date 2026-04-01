@@ -16,6 +16,9 @@ import ChangePassword from "./Pages/Provider/ChangePassword";
 import ProviderRoute from "./components/Provider/Route";
 import ProviderLayout from "./components/Provider/Layout";
 import ProviderDashboard from "./Pages/Provider/Dashboard";
+import ProviderOrders from "./Pages/Provider/Orders";
+import ProviderBookings from "./Pages/Provider/Bookings";
+import ProviderProfile from "./Pages/Provider/Profile";
 import AuthRoute from "./components/Auth/AuthRoute";
 
 // Admin Dashboard Imports
@@ -25,6 +28,7 @@ import DashboardOverview from "./Pages/Admin/DashboardOverview";
 import UsersManagement from "./Pages/Admin/UsersManagement";
 import ProviderApplications from "./Pages/Admin/ProviderApplications";
 import ServiceManagement from "./Pages/Admin/ServiceManagement";
+import BookingsManagement from "./Pages/Admin/BookingsManagement";
 import { ServicePage } from "./Pages/ServicePage";
 
 function AppContent() {
@@ -57,6 +61,9 @@ function AppContent() {
             <Route path="/provider" element={<ProviderLayout />}>
               <Route index element={<Navigate to="/provider/dashboard" replace />} />
               <Route path="dashboard" element={<ProviderDashboard />} />
+              <Route path="orders" element={<ProviderOrders />} />
+              <Route path="bookings" element={<ProviderBookings />} />
+              <Route path="profile" element={<ProviderProfile />} />
             </Route>
           </Route>
 
@@ -68,6 +75,7 @@ function AppContent() {
               <Route path="users" element={<UsersManagement />} />
               <Route path="applications" element={<ProviderApplications />} />
               <Route path="services" element={<ServiceManagement />} />
+              <Route path="bookings" element={<BookingsManagement />} />
             </Route>
           </Route>
         </Routes>

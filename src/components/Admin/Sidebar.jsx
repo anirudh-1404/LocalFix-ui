@@ -10,7 +10,8 @@ import {
     Menu,
     X,
     Wrench,
-    Hammer
+    Hammer,
+    Calendar
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,6 +23,7 @@ const Sidebar = () => {
 
     const menuItems = [
         { title: 'Overview', icon: LayoutDashboard, path: '/admin/dashboard' },
+        { title: 'Bookings', icon: Calendar, path: '/admin/bookings' },
         { title: 'Services', icon: Wrench, path: '/admin/services' },
         { title: 'Users', icon: Users, path: '/admin/users' },
         { title: 'Provider Applications', icon: ClipboardList, path: '/admin/applications' },

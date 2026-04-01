@@ -153,8 +153,8 @@ const Cart = () => {
             const firstItem = cart.items[0];
 
             // 2. Create Razorpay order on backend
-            const orderRes = await axios.post(`${apiUrl}/api/payment/create-order`, 
-                { amount }, 
+            const orderRes = await axios.post(`${apiUrl}/api/payment/create-order`,
+                { amount },
                 { withCredentials: true }
             );
             if (!orderRes.data.success) {
@@ -170,8 +170,8 @@ const Cart = () => {
                 amount: amount * 100, // paise
                 currency: 'INR',
                 name: 'LocalFix',
-                description: cart.items.length > 1 
-                    ? `${firstItem.problemId?.title} + ${cart.items.length - 1} more` 
+                description: cart.items.length > 1
+                    ? `${firstItem.problemId?.title} + ${cart.items.length - 1} more`
                     : firstItem.problemId?.title || 'Service Booking',
                 order_id: orderId,
                 prefill: {
@@ -198,8 +198,8 @@ const Cart = () => {
 
                         // 5. Create booking with payment info
                         const payload = {
-                            providerId: firstItem.problemId.providerId,
-                            problemIds: problemIds, 
+                            providerId: null, // Broadcast to all providers in area
+                            problemIds: problemIds,
                             scheduledDate: bookingData.scheduledDate,
                             startTime: bookingData.startTime,
                             address: selectedAddress.line1,
@@ -219,7 +219,7 @@ const Cart = () => {
                         if (bookingRes.data.success) {
                             // 6. Clear entire cart
                             await axios.delete(`${apiUrl}/api/cart/clear`, { withCredentials: true });
-                            
+
                             setLastBookingId(bookingRes.data.data._id);
                             setShowSuccess(true);
                         }
@@ -299,20 +299,20 @@ const Cart = () => {
                     <p className="text-slate-500 mb-8 leading-relaxed font-medium">
                         Your booking has been confirmed. A professional technician will arrive at your scheduled time.
                     </p>
-                    
+
                     <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 text-left">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Booking Reference</p>
                         <p className="text-sm font-mono text-slate-900 font-bold">#{lastBookingId?.slice(-12)}</p>
                     </div>
 
                     <div className="space-y-3">
-                        <button 
+                        <button
                             onClick={() => navigate('/profile')}
                             className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 transition"
                         >
                             View My Bookings
                         </button>
-                        <button 
+                        <button
                             onClick={() => navigate('/')}
                             className="w-full py-4 bg-white text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition"
                         >
