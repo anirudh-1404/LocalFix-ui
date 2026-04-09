@@ -6,8 +6,9 @@ import AboutDescription from '../components/AboutUs/Desc'
 const About = () => {
   return (
     <div>
-      <AboutDescription/>
       <AboutHero/>
+      <AboutDescription/>
+      
     </div>
   )
 }

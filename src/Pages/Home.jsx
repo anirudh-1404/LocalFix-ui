@@ -1,4 +1,5 @@
 import Hero from '../components/Home Page/Hero';
+import { HowItWorks } from '../components/Home Page/HowItWorks';
 import { LocalFixAbout } from '../components/Home Page/LocalFixAbout';
 
 const Home = () => {
@@ -6,6 +7,7 @@ const Home = () => {
     <>
       <Hero />
       <LocalFixAbout />
+      <HowItWorks />
     </>
   );
 };

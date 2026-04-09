@@ -32,7 +32,7 @@ const AboutHero = () => {
   return (
     <div className="bg-white font-sans">
       {/* --- SECTION 1: THE MISSION HERO --- */}
-      <section className="relative pt-32 pb-20 overflow-hidden bg-white">
+      <section className="relative pt-10 pb-20 overflow-hidden bg-white">
         {/* Soft Background Accents */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-50/50 -skew-x-12 translate-x-1/4 pointer-events-none" />
 
