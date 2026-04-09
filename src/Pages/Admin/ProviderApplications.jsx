@@ -19,6 +19,12 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
+const getImageUrl = (path, apiUrl) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `${apiUrl}/${path.replace(/\\/g, '/')}`;
+};
+
 const ProviderApplications = () => {
     const { user } = useAuth();
     const [applications, setApplications] = useState([]);
@@ -226,10 +232,8 @@ const ProviderApplications = () => {
                                     <section>
                                         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Professional Details</h3>
                                         <div className="space-y-3">
-                                            <DetailItem label="Primary Service" value={selectedProvider.primaryService?.name || 'Other'} />
-                                            {selectedProvider.otherServices && (
-                                                <DetailItem label="Other Services" value={selectedProvider.otherServices} />
-                                            )}
+                                            <DetailItem label="Service Category" value={selectedProvider.serviceCategory} />
+                                            <DetailItem label="Primary Service" value={selectedProvider.primaryService?.name || 'N/A'} />
                                             <DetailItem label="Experience" value={`${selectedProvider.experience} Years`} />
                                             {selectedProvider.additionalSkills?.length > 0 && (
                                                 <div className="flex flex-col gap-1">
@@ -263,7 +267,7 @@ const ProviderApplications = () => {
                                             <DetailItem label="ID Number" value={selectedProvider.idProof?.idNumber} />
                                             {selectedProvider.idProof?.idImage && (
                                                 <a
-                                                    href={`${apiUrl}/${selectedProvider.idProof.idImage}`}
+                                                    href={getImageUrl(selectedProvider.idProof.idImage, apiUrl)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex items-center gap-2 text-sm text-orange-600 font-semibold hover:underline mt-2"
@@ -375,7 +379,7 @@ const DocumentCard = ({ name, path, apiUrl, date }) => (
                 </div>
             </div>
             <a
-                href={`${apiUrl}/${path}`}
+                href={getImageUrl(path, apiUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"

@@ -41,7 +41,6 @@ const Enrollment = () => {
 
         // Step 2: Professional
         primaryService: "",
-        otherServices: "",
         experience: "",
         serviceCategory: "",
         certification: null,
@@ -129,8 +128,8 @@ const Enrollment = () => {
                 return false;
             }
         } else if (step === 2) {
-            if (!formData.experience || (!formData.primaryService && !formData.otherServices)) {
-                toast.error("Please provide professional details");
+            if (!formData.experience || !formData.primaryService || !formData.serviceCategory) {
+                toast.error("Please provide all professional details including service category");
                 return false;
             }
         } else if (step === 3) {
@@ -357,22 +356,19 @@ const Enrollment = () => {
                                             {Array.isArray(services) && services.map(s => (
                                                 <option key={s._id} value={s._id}>{s.name}</option>
                                             ))}
-                                            <option value="other">Other</option>
                                         </select>
                                     </div>
-                                    {formData.primaryService === "other" && (
-                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                            <label className="block text-sm font-semibold text-gray-700">Specify Service</label>
-                                            <input
-                                                type="text"
-                                                name="otherServices"
-                                                value={formData.otherServices}
-                                                onChange={handleInputChange}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                                                placeholder="E.g. Piano Tuning"
-                                            />
-                                        </div>
-                                    )}
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-semibold text-gray-700">Service Category *</label>
+                                        <input
+                                            type="text"
+                                            name="serviceCategory"
+                                            value={formData.serviceCategory}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                                            placeholder="E.g. Home Repairs, Beauty, etc."
+                                        />
+                                    </div>
                                     <div className="space-y-2">
                                         <label className="block text-sm font-semibold text-gray-700">Years of Experience *</label>
                                         <input
